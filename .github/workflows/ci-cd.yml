@@ -32,7 +32,10 @@ jobs:
   deploy:
     needs: test
     runs-on: ubuntu-latest
-    if: github.event_name == 'pull_request' || (github.ref == 'refs/heads/main' && github.event_name == 'push')
+    if: >-
+      (github.event_name == 'pull_request' &&
+       github.event.pull_request.head.repo.full_name == github.repository) ||
+      (github.ref == 'refs/heads/main' && github.event_name == 'push')
     steps:
       - uses: actions/checkout@v4
       - name: Deploy to Vercel
@@ -45,6 +48,9 @@ jobs:
         run: |
           set -e
           npm i -g vercel@latest
+          test -n "$VERCEL_TOKEN" || { echo "VERCEL_TOKEN is empty"; exit 1; }
+          test -n "$VERCEL_SCOPE" || { echo "VERCEL_SCOPE is empty"; exit 1; }
+          vercel whoami --token "$VERCEL_TOKEN"
           mkdir -p logs
           chmod +x healthcheck.sh
 
@@ -64,8 +70,7 @@ jobs:
             # Create the Green deployment without changing the production domain.
             DEPLOY_OUTPUT=$(vercel deploy --prod --skip-domain --yes \
               --token "$VERCEL_TOKEN" \
-              --project "$VERCEL_PROJECT_ID" \
-              --scope "$VERCEL_SCOPE")
+              --project "$VERCEL_PROJECT_ID")
             CANDIDATE_URL=$(printf '%s\n' "$DEPLOY_OUTPUT" | sed 's/\x1b\[[0-9;]*m//g' |
               grep -Eo 'https://[^[:space:]]+' | tail -1)
 
@@ -104,8 +109,7 @@ jobs:
           else
             DEPLOY_OUTPUT=$(vercel deploy --yes \
               --token "$VERCEL_TOKEN" \
-              --project "$VERCEL_PROJECT_ID" \
-              --scope "$VERCEL_SCOPE")
+              --project "$VERCEL_PROJECT_ID")
             URL=$(printf '%s\n' "$DEPLOY_OUTPUT" | sed 's/\x1b\[[0-9;]*m//g' |
               grep -Eo 'https://[^[:space:]]+' | tail -1)
 
