@@ -1,9 +1,27 @@
 {
   "version": 2,
-  "rewrites": [
+  "builds": [
     {
-      "source": "/api/sort",
-      "destination": "/api/sort.py"
+      "src": "api/sort.py",
+      "use": "@vercel/python"
+    },
+    {
+      "src": "index.html",
+      "use": "@vercel/static"
+    }
+  ],
+  "routes": [
+    {
+      "src": "/api/sort",
+      "dest": "api/sort.py"
+    },
+    {
+      "src": "/(.*\\.(css|js|png|jpg|ico|svg))",
+      "dest": "/$1"
+    },
+    {
+      "src": "/(.*)",
+      "dest": "/index.html"
     }
   ]
 }
