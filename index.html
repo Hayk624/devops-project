@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="ka">
+<head>
+    <!-- გვერდის ძირითადი პარამეტრები -->
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>რიცხვების სორტირება</title>
+
+    <!-- CSS ფაილის დაკავშირება -->
+    <link rel="stylesheet" href="./style.css">
+</head>
+<body>
+
+    <!-- მთავარი კონტეინერი -->
+    <div class="card">
+
+        <!-- გვერდის სათაური -->
+        <div class="card-header">
+            <div class="badge"><i class="fa-solid fa-arrow-down-1-9"></i> Number Sorter</div>
+            <h1>რიცხვების სორტირება</h1>
+            <p class="subtitle">შეიყვანეთ რიცხვები მძიმით გამოყოფილი მათი დახარისხებისთვის.</p>
+        </div>
+
+        <!-- მონაცემების შეყვანა -->
+        <div class="card-body">
+            <div class="form-group">
+                <label for="arrayInput">
+                    <i class="fa-solid fa-list-ol"></i> მონაცემების შეყვანა:
+                </label>
+
+                <div class="input-wrapper">
+                    <input type="text" id="arrayInput"
+                        placeholder="მაგალითად: 42, -5, 10, 0, 7"
+                        value="42, -5, 10, 0, 7">
+
+                    <!-- სორტირების ღილაკი -->
+                    <button id="sortBtn" onclick="sortArray()">
+                        <span>სორტირება</span>
+                        <i class="fa-solid fa-arrow-right"></i>
+                    </button>
+                </div>
+            </div>
+
+            <br><br>
+
+            <!-- შედეგების ჩვენება -->
+            <div id="resultBox" class="result-box">
+                <div class="result-header">
+                    <i class="fa-solid fa-circle-check"></i> დამუშავების შედეგი
+                </div>
+
+                <div class="result-row">
+                    <span class="label">თავდაპირველი მასივი:</span>
+                    <span id="originalArray" class="array-tag original">
+                        [42, -5, 10, 0, 7]
+                    </span>
+                </div>
+
+                <div class="result-row">
+                    <span class="label">დახარისხებული:</span>
+                    <span id="sortedArray" class="array-tag sorted">
+                        [-5, 0, 7, 10, 42]
+                    </span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- JavaScript ფაილის დაკავშირება -->
+    <script src="./script.js"></script>
+
+</body>
+</html>
