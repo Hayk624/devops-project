@@ -45,7 +45,7 @@ jobs:
           set -e
           npm i -g vercel@latest
           mkdir -p logs
-          chmod +x scripts/healthcheck.sh
+          chmod +x healthcheck.sh
 
           if [ "${{ github.ref }}" = "refs/heads/main" ] && [ "${{ github.event_name }}" = "push" ]; then
             if [ -z "$VERCEL_DOMAIN" ]; then
@@ -75,7 +75,7 @@ jobs:
             vercel inspect "$CANDIDATE_URL" --wait --timeout=5m
 
             # Check Green before switching the production domain.
-            if ! ./scripts/healthcheck.sh "$CANDIDATE_URL" logs/health.log; then
+            if ! ./healthcheck.sh "$CANDIDATE_URL" logs/health.log; then
               echo "Green deployment failed healthcheck; production remains on Blue"
               exit 1
             fi
@@ -84,7 +84,7 @@ jobs:
             vercel promote "$CANDIDATE_URL" --yes
 
             # Verify the promoted deployment through the public domain.
-            if ! ./scripts/healthcheck.sh "https://$VERCEL_DOMAIN" logs/health.log; then
+            if ! ./healthcheck.sh "https://$VERCEL_DOMAIN" logs/health.log; then
               echo "Production healthcheck failed; rolling back to Blue"
               if [ -n "$OLD_DEPLOYMENT_URL" ]; then
                 vercel rollback "https://$OLD_DEPLOYMENT_URL" --yes
@@ -102,7 +102,7 @@ jobs:
               exit 1
             fi
 
-            ./scripts/healthcheck.sh "$URL" logs/health.log
+            ./healthcheck.sh "$URL" logs/health.log
           fi
       - uses: actions/upload-artifact@v4
         if: always()
