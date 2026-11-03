@@ -62,6 +62,7 @@ jobs:
 
             # Create the Green deployment without changing the production domain.
             DEPLOY_OUTPUT=$(vercel deploy --prod --skip-domain --yes \
+              --token "$VERCEL_TOKEN" \
               --project "$VERCEL_PROJECT_ID")
             CANDIDATE_URL=$(printf '%s\n' "$DEPLOY_OUTPUT" | sed 's/\x1b\[[0-9;]*m//g' |
               grep -Eo 'https://[^[:space:]]+' | tail -1)
@@ -72,7 +73,7 @@ jobs:
             fi
 
             echo "Green deployment: $CANDIDATE_URL"
-            vercel inspect "$CANDIDATE_URL" --wait --timeout=5m
+            vercel inspect "$CANDIDATE_URL" --wait --timeout=5m --token "$VERCEL_TOKEN"
 
             # Check Green before switching the production domain.
             if ! ./healthcheck.sh "$CANDIDATE_URL" logs/health.log; then
@@ -81,18 +82,19 @@ jobs:
             fi
 
             echo "Promoting Green to production"
-            vercel promote "$CANDIDATE_URL" --yes
+            vercel promote "$CANDIDATE_URL" --yes --token "$VERCEL_TOKEN"
 
             # Verify the promoted deployment through the public domain.
             if ! ./healthcheck.sh "https://$VERCEL_DOMAIN" logs/health.log; then
               echo "Production healthcheck failed; rolling back to Blue"
               if [ -n "$OLD_DEPLOYMENT_URL" ]; then
-                vercel rollback "https://$OLD_DEPLOYMENT_URL" --yes
+                vercel rollback "https://$OLD_DEPLOYMENT_URL" --yes --token "$VERCEL_TOKEN"
               fi
               exit 1
             fi
           else
             DEPLOY_OUTPUT=$(vercel deploy --yes \
+              --token "$VERCEL_TOKEN" \
               --project "$VERCEL_PROJECT_ID")
             URL=$(printf '%s\n' "$DEPLOY_OUTPUT" | sed 's/\x1b\[[0-9;]*m//g' |
               grep -Eo 'https://[^[:space:]]+' | tail -1)
