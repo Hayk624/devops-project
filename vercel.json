@@ -16,8 +16,12 @@
       "dest": "api/sort.py"
     },
     {
-      "src": "/(.*)",
+      "src": "/(.*\\.(css|js|png|jpg|ico|svg))",
       "dest": "/$1"
+    },
+    {
+      "src": "/(.*)",
+      "dest": "/index.html"
     }
   ]
 }
