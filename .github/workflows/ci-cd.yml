@@ -75,8 +75,9 @@ jobs:
             echo "Green deployment: $CANDIDATE_URL"
             vercel inspect "$CANDIDATE_URL" --wait --timeout=5m --token "$VERCEL_TOKEN"
 
-            # Check Green before switching the production domain.
-            if ! ./healthcheck.sh "$CANDIDATE_URL" logs/health.log; then
+            # Check Green using vercel curl to bypass deployment protection
+            echo "Running health check on Green deployment..."
+            if ! vercel curl "$CANDIDATE_URL" --token "$VERCEL_TOKEN" > logs/health.log 2>&1; then
               echo "Green deployment failed healthcheck; production remains on Blue"
               exit 1
             fi
@@ -104,7 +105,8 @@ jobs:
               exit 1
             fi
 
-            ./healthcheck.sh "$URL" logs/health.log
+            echo "Running health check on Preview deployment..."
+            vercel curl "$URL" --token "$VERCEL_TOKEN" > logs/health.log
           fi
       - uses: actions/upload-artifact@v4
         if: always()
