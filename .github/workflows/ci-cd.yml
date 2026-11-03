@@ -41,6 +41,7 @@ jobs:
           VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
           VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
           VERCEL_DOMAIN: ${{ secrets.VERCEL_DOMAIN }}
+          VERCEL_SCOPE: ${{ secrets.VERCEL_SCOPE }}
         run: |
           set -e
           npm i -g vercel@latest
@@ -63,7 +64,8 @@ jobs:
             # Create the Green deployment without changing the production domain.
             DEPLOY_OUTPUT=$(vercel deploy --prod --skip-domain --yes \
               --token "$VERCEL_TOKEN" \
-              --project "$VERCEL_PROJECT_ID")
+              --project "$VERCEL_PROJECT_ID" \
+              --scope "$VERCEL_SCOPE")
             CANDIDATE_URL=$(printf '%s\n' "$DEPLOY_OUTPUT" | sed 's/\x1b\[[0-9;]*m//g' |
               grep -Eo 'https://[^[:space:]]+' | tail -1)
 
@@ -73,7 +75,9 @@ jobs:
             fi
 
             echo "Green deployment: $CANDIDATE_URL"
-            vercel inspect "$CANDIDATE_URL" --wait --timeout=5m --token "$VERCEL_TOKEN"
+            vercel inspect "$CANDIDATE_URL" --wait --timeout=5m \
+              --token "$VERCEL_TOKEN" \
+              --scope "$VERCEL_SCOPE"
 
             # Check Green using our healthcheck.sh script (supports 200 and 302)
             echo "Running health check on Green deployment..."
@@ -83,20 +87,25 @@ jobs:
             fi
 
             echo "Promoting Green to production"
-            vercel promote "$CANDIDATE_URL" --yes --token "$VERCEL_TOKEN"
+            vercel promote "$CANDIDATE_URL" --yes \
+              --token "$VERCEL_TOKEN" \
+              --scope "$VERCEL_SCOPE"
 
             # Verify the promoted deployment through the public domain.
             if ! ./healthcheck.sh "https://$VERCEL_DOMAIN" logs/health.log; then
               echo "Production healthcheck failed; rolling back to Blue"
               if [ -n "$OLD_DEPLOYMENT_URL" ]; then
-                vercel rollback "https://$OLD_DEPLOYMENT_URL" --yes --token "$VERCEL_TOKEN"
+                vercel rollback "https://$OLD_DEPLOYMENT_URL" --yes \
+                  --token "$VERCEL_TOKEN" \
+                  --scope "$VERCEL_SCOPE"
               fi
               exit 1
             fi
           else
             DEPLOY_OUTPUT=$(vercel deploy --yes \
               --token "$VERCEL_TOKEN" \
-              --project "$VERCEL_PROJECT_ID")
+              --project "$VERCEL_PROJECT_ID" \
+              --scope "$VERCEL_SCOPE")
             URL=$(printf '%s\n' "$DEPLOY_OUTPUT" | sed 's/\x1b\[[0-9;]*m//g' |
               grep -Eo 'https://[^[:space:]]+' | tail -1)
 
